@@ -11,10 +11,6 @@
             --ui-bg: rgba(0, 0, 0, 0.95);
             --accent: #3877FF;
             --border-color: #fff;
-            /* MATEMATİKSEL DÜZELTME: 
-               12 Sütun x 25px = 300px Genişlik
-               20 Satır x 25px = 500px Yükseklik 
-               Bu oran bozulursa bloklar kaybolur. */
             --game-width: 300px; 
             --game-height: 500px;
         }
@@ -41,16 +37,15 @@
             align-items: center;
         }
 
-        /* --- ÜST BİLGİ ÇUBUĞU (Genişletildi) --- */
+        /* --- ÜST BİLGİ ÇUBUĞU --- */
         #top-bar {
-            display: none; /* Başlangıçta gizli */
+            display: none;
             width: var(--game-width);
-            height: 90px; /* Yükseklik artırıldı */
+            height: 90px;
             background: #333;
-            /* Çerçeve uyumu için box-sizing ve border ayarları */
             box-sizing: border-box; 
             border: 2px solid var(--border-color);
-            border-bottom: none; /* Oyun alanıyla bütünleşsin */
+            border-bottom: none;
             border-radius: 12px 12px 0 0;
             padding: 0 15px;
             flex-direction: row;
@@ -74,7 +69,6 @@
             margin-left: 5px;
         }
 
-        /* Header Pause Butonu */
         .header-pause-btn {
             width: 45px;
             height: 45px;
@@ -97,7 +91,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            width: 70px; /* Sabit genişlik */
+            width: 70px;
         }
         .next-label {
             font-size: 11px;
@@ -105,7 +99,7 @@
             margin-bottom: 4px;
             font-weight: bold;
             letter-spacing: 1px;
-            white-space: nowrap; /* Yazı taşmasın */
+            white-space: nowrap;
         }
         #next-canvas {
             background: #000;
@@ -114,14 +108,14 @@
             border-radius: 4px;
         }
 
-        /* --- OYUN ALANI (Boyutlar Sabitlendi) --- */
+        /* --- OYUN ALANI --- */
         #game-area-container {
             position: relative;
             width: var(--game-width);
             height: var(--game-height);
-            box-sizing: border-box; /* Border dahil hesaplama */
+            box-sizing: border-box;
             border: 2px solid var(--border-color);
-            border-top: 1px solid #555; /* Üst bar ile ayrım çizgisi */
+            border-top: 1px solid #555;
             border-radius: 0 0 12px 12px;
             overflow: hidden;
             box-shadow: 0 10px 40px rgba(0,0,0,0.6);
@@ -181,7 +175,7 @@
         }
         .high-score-list li { font-size: 22px; margin: 10px 0; border-bottom: 1px solid #555; color: #fff; }
 
-        /* --- MOBİL KONTROLLER --- */
+        /* --- MOBİL KONTROLLER (GÜNCELLENDİ) --- */
         #mobile-controls {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -200,11 +194,11 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
+            font-size: 32px; /* Okları biraz büyüttüm */
             color: white;
             user-select: none;
             transition: background 0.1s;
-            /* Hepsi aynı görsel stilde */
+            /* Hepsi aynı stil, renk farkı yok */
         }
 
         .control-btn:active {
@@ -212,10 +206,9 @@
             border-color: #fff;
             transform: scale(0.95);
         }
-
-        /* İkon Renkleri */
-        .btn-rotate { color: #0DFF72; border-color: rgba(13, 255, 114, 0.5); }
-        .btn-down { color: #0DC2FF; border-color: rgba(13, 194, 255, 0.5); }
+        
+        /* İkonlar için hafif renk vurgusu (isteğe bağlı kaldırılabilir) */
+        .btn-up { color: #0DFF72; } /* Döndürme için */
 
     </style>
 </head>
@@ -270,23 +263,20 @@
 
         <div id="mobile-controls">
             <div class="control-btn" id="btn-left">◀</div>
-            <div class="control-btn btn-down" id="btn-down">▼</div>
+            <div class="control-btn" id="btn-down">▼</div>
             <div class="control-btn" id="btn-right">▶</div>
-            <div class="control-btn btn-rotate" id="btn-rotate">↻</div>
+            <div class="control-btn btn-up" id="btn-rotate">▲</div>
         </div>
     </div>
 
     <script>
-        // --- AYARLAR & MATEMATİK ---
+        // --- AYARLAR ---
         const canvas = document.getElementById('tetris');
         const context = canvas.getContext('2d');
         const nextCanvas = document.getElementById('next-canvas');
         const nextContext = nextCanvas.getContext('2d');
         
-        // ÇÖZÜM BURADA:
-        // Genişlik: 300px / 12 Sütun = 25px (Tam sayı)
-        // Yükseklik: 500px / 20 Satır = 25px (Tam sayı)
-        // Artık aspect ratio bozulmayacak, alttan satır kaybolmayacak.
+        // 300/12 = 25px
         context.scale(25, 25);
         nextContext.scale(15, 15);
 
@@ -322,7 +312,6 @@
 
         function draw() {
             context.fillStyle = '#000';
-            // Canvas'ı temizle (300/25 = 12, 500/25 = 20)
             context.fillRect(0, 0, 12, 20);
             drawMatrix(arena, {x: 0, y: 0}, context);
             drawMatrix(player.matrix, player.pos, context);
@@ -452,7 +441,7 @@
             dropInterval = Math.max(100, 1000 - (level - 1) * 100);
         }
 
-        // --- OYUN YÖNETİMİ ---
+        // --- YÖNETİM ---
         function showMainMenu() {
             isRunning = false;
             document.getElementById('menu-main').classList.remove('hidden');
@@ -545,36 +534,60 @@
             listEl.innerHTML = scores.length ? scores.map((s, i) => `<li>${i+1}. ${s}</li>`).join('') : "<li>Henüz skor yok</li>";
         }
 
-        // --- KONTROLLER ---
+        // --- KONTROLLER (GÜNCELLENDİ: SOL/SAĞ SERİ HAREKET) ---
         document.getElementById('btn-header-pause').addEventListener('click', (e) => {
             e.preventDefault(); togglePause();
         });
 
-        function bindTouch(id, actionStart, actionEnd) {
+        // Butona basılı tutma mantığını yöneten genel fonksiyon
+        function bindTouchRepeat(id, action) {
             const btn = document.getElementById(id);
-            const startHandler = (e) => { e.preventDefault(); if (isRunning && !isPaused) actionStart(); };
-            const endHandler = (e) => { e.preventDefault(); if (actionEnd) actionEnd(); };
+            let intervalId = null;
 
-            btn.addEventListener('touchstart', startHandler, {passive: false});
-            btn.addEventListener('touchend', endHandler);
-            btn.addEventListener('mousedown', startHandler);
-            btn.addEventListener('mouseup', endHandler);
-            btn.addEventListener('mouseleave', endHandler);
+            const start = (e) => {
+                e.preventDefault();
+                if (isRunning && !isPaused) {
+                    action(); // İlk dokunuşta hemen yap
+                    if (!intervalId) {
+                        // 100ms hızla tekrar et (Rapid Fire)
+                        intervalId = setInterval(action, 100);
+                    }
+                }
+            };
+
+            const end = (e) => {
+                e.preventDefault();
+                if (intervalId) {
+                    clearInterval(intervalId);
+                    intervalId = null;
+                }
+            };
+
+            btn.addEventListener('touchstart', start, {passive: false});
+            btn.addEventListener('touchend', end);
+            btn.addEventListener('mousedown', start);
+            btn.addEventListener('mouseup', end);
+            btn.addEventListener('mouseleave', end);
         }
 
-        bindTouch('btn-left', () => playerMove(-1));
-        bindTouch('btn-right', () => playerMove(1));
-        bindTouch('btn-rotate', () => playerRotate(1));
+        // Tek basış fonksiyonu (Döndürme için)
+        function bindTouchSingle(id, action) {
+            const btn = document.getElementById(id);
+            const handler = (e) => {
+                e.preventDefault();
+                if (isRunning && !isPaused) action();
+            };
+            btn.addEventListener('touchstart', handler, {passive: false});
+            btn.addEventListener('mousedown', handler);
+        }
 
-        let downIntervalId = null;
-        bindTouch('btn-down', 
-            () => { 
-                playerDrop(); // İlk dokunuşta hemen indir
-                // Basılı tutunca seri indir
-                if (!downIntervalId) downIntervalId = setInterval(() => playerDrop(), 50);
-            },
-            () => { if (downIntervalId) { clearInterval(downIntervalId); downIntervalId = null; } }
-        );
+        // Sol - Sağ - Aşağı için SERİ HAREKET
+        bindTouchRepeat('btn-left', () => playerMove(-1));
+        bindTouchRepeat('btn-right', () => playerMove(1));
+        bindTouchRepeat('btn-down', () => playerDrop()); // Aşağısı zaten hızlıydı, 100ms iyi
+
+        // Döndürme için TEK HAREKET (Daha kontrollü olması için)
+        bindTouchSingle('btn-rotate', () => playerRotate(1));
 
         // Klavye
         document.addEventListener('keydown', event => {
