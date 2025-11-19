@@ -4,12 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>CRAZY TETRIS MOBILE</title>
+    <title>CRAZY TETRIS MOBILE PRO</title>
     <style>
         :root {
             --bg-color: #202028;
             --ui-bg: rgba(0, 0, 0, 0.95);
             --accent: #3877FF;
+            --border-color: #fff;
+            --container-width: 320px;
         }
 
         body {
@@ -19,23 +21,31 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center; /* Dikeyde de ortala */
+            justify-content: center;
             height: 100vh;
             margin: 0;
             overflow: hidden;
             user-select: none;
+            -webkit-user-select: none;
             touch-action: none;
         }
 
-        /* --- ÜST BİLGİ ÇUBUĞU (YATAY KUTU) --- */
+        .main-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- ÜST BİLGİ ÇUBUĞU --- */
         #top-bar {
-            display: none; /* Menüdeyken gizli, oyunda açılır */
-            width: 300px; /* Oyun alanıyla aynı/yakın genişlik */
+            display: none;
+            width: var(--container-width);
+            height: 70px;
             background: #333;
-            border: 2px solid #fff;
-            border-bottom: none; /* Oyun alanıyla birleşsin diye */
-            border-radius: 10px 10px 0 0;
-            padding: 10px;
+            border: 2px solid var(--border-color);
+            border-bottom: none;
+            border-radius: 12px 12px 0 0;
+            padding: 0 10px;
             box-sizing: border-box;
             flex-direction: row;
             justify-content: space-between;
@@ -44,9 +54,12 @@
 
         .stats-group {
             text-align: left;
-            font-size: 14px;
+            font-size: 12px;
             color: #aaa;
+            display: flex;
+            gap: 10px;
         }
+        .stat-item div { margin-bottom: 2px; }
         .stats-val {
             color: #fff;
             font-size: 18px;
@@ -54,38 +67,66 @@
             display: block;
         }
 
+        /* YENİ: Header Pause Butonu */
+        .header-pause-btn {
+            width: 40px;
+            height: 40px;
+            background: #FF0D72; /* Kırmızı Durdurma Rengi */
+            border: 2px solid #fff;
+            border-radius: 50%;
+            color: white;
+            font-weight: bold;
+            font-family: monospace;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(255, 13, 114, 0.4);
+        }
+        .header-pause-btn:active { transform: scale(0.9); }
+
         .next-box {
-            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
         .next-label {
             font-size: 10px;
             color: #0DFF72;
             margin-bottom: 2px;
             font-weight: bold;
+            letter-spacing: 1px;
         }
         #next-canvas {
             background: #000;
             border: 1px solid #555;
             display: block;
+            border-radius: 4px;
         }
 
         /* --- OYUN ALANI --- */
-        #game-wrapper {
+        #game-area-container {
             position: relative;
-            width: 240px; /* Canvas genişliği */
-            height: 400px; /* Canvas yüksekliği */
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            width: var(--container-width);
+            height: 480px;
+            border: 2px solid var(--border-color);
+            border-top: 1px solid #555;
+            border-radius: 0 0 12px 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
         canvas {
             display: block;
             background-color: #000;
-            border: 2px solid #fff;
-            /* Üst bar varsa üst border'ı kaldırabiliriz ama bütünlük için kalsın */
+            width: 100%;
+            height: 100%;
         }
 
-        /* --- MENÜLER & ARAYÜZLER (Overlay) --- */
-        .overlay {
+        /* --- MENÜLER --- */
+        .menu-screen, .overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             background: var(--ui-bg);
@@ -95,125 +136,76 @@
             justify-content: center;
             z-index: 100;
         }
+        
+        .menu-screen { position: fixed; z-index: 200; background: var(--bg-color); }
 
         .hidden { display: none !important; }
-
-        /* GENEL MENÜ STİLLERİ */
-        .menu-screen {
-            position: fixed; /* Tüm ekranı kaplasın */
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-color);
-            z-index: 200;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
 
         h1.game-title {
             font-size: 42px;
             color: #FFE138;
             text-shadow: 4px 4px 0 #FF0D72;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
             text-align: center;
-            line-height: 1.2;
         }
 
-        .menu-btn {
-            width: 220px;
+        .menu-btn, .overlay-btn {
+            width: 200px;
             padding: 15px;
-            margin: 10px;
-            font-size: 20px;
+            margin: 8px;
+            font-size: 18px;
             font-weight: bold;
             color: white;
             background: var(--accent);
             border: 2px solid #fff;
-            border-radius: 10px;
+            border-radius: 8px;
             cursor: pointer;
-            box-shadow: 0 5px 0 #1a54d6;
-            transition: transform 0.1s, box-shadow 0.1s;
+            box-shadow: 0 4px 0 #1a54d6;
         }
-        .menu-btn:active {
-            transform: translateY(5px);
-            box-shadow: none;
-        }
-        .btn-green { background: #0DFF72; color: #000; box-shadow: 0 5px 0 #0ab552; }
-        .btn-red { background: #FF0D72; box-shadow: 0 5px 0 #c40052; }
+        .menu-btn:active, .overlay-btn:active { transform: translateY(4px); box-shadow: none; }
+        .btn-green { background: #0DFF72; color: #000; box-shadow: 0 4px 0 #0ab552; }
+        .btn-red { background: #FF0D72; box-shadow: 0 4px 0 #c40052; }
 
-        /* SKOR TABLOSU EKRANI */
-        .score-screen-content {
-            text-align: center;
-            width: 80%;
-        }
         .high-score-list {
-            list-style: none;
-            padding: 0;
-            margin: 30px 0;
-            background: #333;
-            border-radius: 10px;
-            padding: 20px;
+            list-style: none; padding: 0; margin: 20px 0;
+            background: #333; width: 80%; border-radius: 10px; padding: 15px; text-align: center;
         }
-        .high-score-list li {
-            font-size: 24px;
-            margin: 15px 0;
-            border-bottom: 1px solid #555;
-            padding-bottom: 5px;
-        }
-        .high-score-list li:nth-child(1) { color: #FFE138; font-weight: bold; font-size: 28px; }
-
-        /* OYUN İÇİ BUTTONLAR */
-        .overlay-btn {
-            padding: 12px 25px;
-            font-size: 18px;
-            margin: 10px;
-            border-radius: 5px;
-            border: none;
-            cursor: pointer;
-            color: white;
-            background: var(--accent);
-        }
+        .high-score-list li { font-size: 22px; margin: 10px 0; border-bottom: 1px solid #555; color: #fff; }
+        .high-score-list li:nth-child(1) { color: #FFE138; font-weight: bold; }
 
         /* --- MOBİL KONTROLLER --- */
         #mobile-controls {
-            display: flex;
-            width: 300px;
-            margin-top: 20px;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .d-pad {
             display: grid;
-            grid-template-columns: 60px 60px 60px;
-            grid-template-rows: 50px 60px;
-            gap: 5px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            width: var(--container-width);
+            margin-top: 20px;
             justify-items: center;
         }
 
         .control-btn {
-            width: 60px; height: 60px;
+            width: 65px;
+            height: 65px;
             background: rgba(255,255,255,0.1);
-            border: 2px solid rgba(255,255,255,0.3);
-            border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 24px; color: white;
+            border: 2px solid rgba(255,255,255,0.4);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
             user-select: none;
+            transition: background 0.1s;
         }
-        .control-btn:active { background: rgba(255,255,255,0.3); }
 
-        /* D-PAD Yerleşimi */
-        .btn-up { grid-column: 2; visibility: hidden; /* Yukarı tuşu yok */ }
-        .btn-left { grid-column: 1; grid-row: 2; }
-        .btn-down { grid-column: 2; grid-row: 2; }
-        .btn-right { grid-column: 3; grid-row: 2; }
-
-        .action-btn {
-            width: 80px; height: 80px;
-            border-radius: 50%;
-            background: rgba(13, 255, 114, 0.2);
-            border-color: #0DFF72;
-            font-size: 30px;
+        .control-btn:active {
+            background: rgba(255,255,255,0.3);
+            border-color: #fff;
+            transform: scale(0.95);
         }
+
+        .btn-rotate { color: #0DFF72; border-color: rgba(13, 255, 114, 0.5); }
+        .btn-down { color: #0DC2FF; border-color: rgba(13, 194, 255, 0.5); }
 
     </style>
 </head>
@@ -226,57 +218,51 @@
     </div>
 
     <div id="menu-scores" class="menu-screen hidden">
-        <div class="score-screen-content">
-            <h2 style="color:#FFE138; font-size:30px;">EN İYİLER</h2>
-            <ul class="high-score-list" id="hs-list-display">
-                <li>Loading...</li>
-            </ul>
-            <button class="menu-btn btn-red" onclick="showMainMenu()">GERİ DÖN</button>
-        </div>
+        <h2 style="color:#FFE138;">EN İYİLER</h2>
+        <ul class="high-score-list" id="hs-list-display"><li>Loading...</li></ul>
+        <button class="menu-btn btn-red" onclick="showMainMenu()">GERİ DÖN</button>
     </div>
 
-    <div id="game-container" class="hidden">
+    <div id="game-container" class="main-wrapper hidden">
         
         <div id="top-bar">
             <div class="stats-group">
-                <div>PUAN <span class="stats-val" id="score-val">0</span></div>
-                <div style="margin-top:5px;">SEVİYE <span class="stats-val" id="level-val">1</span></div>
+                <div class="stat-item">PUAN<span class="stats-val" id="score-val">0</span></div>
+                <div class="stat-item">SEVİYE<span class="stats-val" id="level-val">1</span></div>
             </div>
             
+            <div id="btn-header-pause" class="header-pause-btn">||</div>
+
             <div class="next-box">
                 <div class="next-label">SIRADAKİ</div>
                 <canvas id="next-canvas" width="60" height="60"></canvas>
             </div>
         </div>
 
-        <div id="game-wrapper">
-            <canvas id="tetris" width="240" height="400"></canvas>
+        <div id="game-area-container">
+            <canvas id="tetris" width="320" height="480"></canvas>
 
             <div id="overlay-countdown" class="overlay hidden">
                 <div style="font-size:100px; font-weight:bold; color:#0DFF72;" id="count-num">3</div>
             </div>
-
             <div id="overlay-pause" class="overlay hidden">
-                <h2 style="color:#0DC2FF; font-size:36px;">DURAKLATILDI</h2>
+                <h2 style="color:#0DC2FF;">DURAKLATILDI</h2>
                 <button class="overlay-btn" onclick="togglePause()">DEVAM ET</button>
-                <button class="overlay-btn" style="background:#FF0D72" onclick="quitToMenu()">MENÜYE DÖN</button>
+                <button class="overlay-btn btn-red" onclick="quitToMenu()">MENÜYE DÖN</button>
             </div>
-
             <div id="overlay-gameover" class="overlay hidden">
-                <h2 style="color:#FF0D72; font-size:36px;">OYUN BİTTİ</h2>
-                <p style="font-size:20px;">SKORUN: <span id="final-score">0</span></p>
-                <button class="overlay-btn" onclick="startGame()">TEKRAR OYNA</button>
-                <button class="overlay-btn" style="background:#333" onclick="showHighScores()">SKORLARI GÖR</button>
+                <h2 style="color:#FF0D72;">OYUN BİTTİ</h2>
+                <p style="font-size:24px;">SKOR: <span id="final-score">0</span></p>
+                <button class="overlay-btn btn-green" onclick="startGame()">TEKRAR OYNA</button>
+                <button class="overlay-btn" onclick="showHighScores()">SKORLARI GÖR</button>
             </div>
         </div>
 
         <div id="mobile-controls">
-            <div class="d-pad">
-                <div class="control-btn btn-left" id="btn-left">◀</div>
-                <div class="control-btn btn-down" id="btn-down">▼</div>
-                <div class="control-btn btn-right" id="btn-right">▶</div>
-            </div>
-            <div class="control-btn action-btn" id="btn-rotate">↻</div>
+            <div class="control-btn" id="btn-left">◀</div>
+            <div class="control-btn btn-down" id="btn-down">▼</div>
+            <div class="control-btn" id="btn-right">▶</div>
+            <div class="control-btn btn-rotate" id="btn-rotate">↻</div>
         </div>
     </div>
 
@@ -287,8 +273,9 @@
         const nextCanvas = document.getElementById('next-canvas');
         const nextContext = nextCanvas.getContext('2d');
         
-        context.scale(20, 20);
-        nextContext.scale(15, 15); // Önizleme biraz daha küçük ölçekte (60px kutu için)
+        const scaleFactor = 320 / 12; 
+        context.scale(scaleFactor, scaleFactor);
+        nextContext.scale(15, 15);
 
         const arena = createMatrix(12, 20);
         const player = { pos: {x: 0, y: 0}, matrix: null, score: 0, next: null };
@@ -300,7 +287,7 @@
         let isPaused = false;
         let animationId = null;
 
-        // --- FONKSİYONLAR ---
+        // --- TEMEL FONKSİYONLAR ---
         function createMatrix(w, h) {
             const matrix = [];
             while (h--) matrix.push(new Array(w).fill(0));
@@ -322,7 +309,7 @@
 
         function draw() {
             context.fillStyle = '#000';
-            context.fillRect(0, 0, canvas.width, canvas.height);
+            context.fillRect(0, 0, canvas.width / scaleFactor, canvas.height / scaleFactor);
             drawMatrix(arena, {x: 0, y: 0}, context);
             drawMatrix(player.matrix, player.pos, context);
         }
@@ -331,7 +318,6 @@
             nextContext.fillStyle = '#000';
             nextContext.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
             if (player.next) {
-                // 4x4'lük grid içinde ortala
                 const offset = {
                     x: (4 - player.next[0].length) / 2,
                     y: (4 - player.next.length) / 2
@@ -347,7 +333,7 @@
                         ctx.fillStyle = colors[value];
                         ctx.fillRect(x + offset.x, y + offset.y, 1, 1);
                         ctx.lineWidth = 0.05;
-                        ctx.strokeStyle = 'white';
+                        ctx.strokeStyle = 'rgba(255,255,255,0.5)';
                         ctx.strokeRect(x + offset.x, y + offset.y, 1, 1);
                     }
                 });
@@ -411,9 +397,7 @@
             player.pos.y = 0;
             player.pos.x = (arena[0].length / 2 | 0) - (player.matrix[0].length / 2 | 0);
             
-            if (collide(arena, player)) {
-                gameOver();
-            }
+            if (collide(arena, player)) gameOver();
         }
 
         function playerDrop() {
@@ -454,8 +438,7 @@
             dropInterval = Math.max(100, 1000 - (level - 1) * 100);
         }
 
-        // --- NAVIGASYON & EKRAN YÖNETİMİ ---
-
+        // --- YÖNETİM ---
         function showMainMenu() {
             isRunning = false;
             document.getElementById('menu-main').classList.remove('hidden');
@@ -468,33 +451,23 @@
             updateHighScoreList();
             document.getElementById('menu-main').classList.add('hidden');
             document.getElementById('menu-scores').classList.remove('hidden');
-            // Oyun game over ekranından buraya gelindiyse oyun konteynerini gizle
             document.getElementById('game-container').classList.add('hidden');
-            document.getElementById('top-bar').style.display = 'none';
         }
 
-        function quitToMenu() {
-            showMainMenu();
-        }
+        function quitToMenu() { showMainMenu(); }
 
         function startGame() {
-            // Ekranları ayarla
             document.getElementById('menu-main').classList.add('hidden');
             document.getElementById('menu-scores').classList.add('hidden');
             document.getElementById('game-container').classList.remove('hidden');
-            document.getElementById('top-bar').style.display = 'flex'; // Üst barı aç
-
-            // Overlayleri temizle
+            document.getElementById('top-bar').style.display = 'flex';
             document.getElementById('overlay-gameover').classList.add('hidden');
             document.getElementById('overlay-pause').classList.add('hidden');
             
-            // Oyunu sıfırla
             arena.forEach(row => row.fill(0));
             player.score = 0;
             player.next = null;
             updateScore();
-            
-            // Geri sayım başlat
             startCountdown();
         }
 
@@ -503,20 +476,14 @@
             let count = 3;
             const el = document.getElementById('count-num');
             el.innerText = count;
-            
             const timer = setInterval(() => {
                 count--;
-                if (count > 0) {
-                    el.innerText = count;
-                } else {
+                if (count > 0) el.innerText = count;
+                else {
                     clearInterval(timer);
                     document.getElementById('overlay-countdown').classList.add('hidden');
-                    // Oyun başlasın
-                    isRunning = true;
-                    isPaused = false;
-                    playerReset();
-                    lastTime = performance.now();
-                    dropCounter = 0;
+                    isRunning = true; isPaused = false;
+                    playerReset(); lastTime = performance.now(); dropCounter = 0;
                     update();
                 }
             }, 1000);
@@ -527,10 +494,8 @@
             const deltaTime = time - lastTime;
             lastTime = time;
             dropCounter += deltaTime;
-            
             if (dropCounter > 2000) dropCounter = 0;
             if (dropCounter > dropInterval) playerDrop();
-            
             draw();
             animationId = requestAnimationFrame(update);
         }
@@ -538,12 +503,10 @@
         function togglePause() {
             if (!isRunning) return;
             isPaused = !isPaused;
-            if (isPaused) {
-                document.getElementById('overlay-pause').classList.remove('hidden');
-            } else {
+            if (isPaused) document.getElementById('overlay-pause').classList.remove('hidden');
+            else {
                 document.getElementById('overlay-pause').classList.add('hidden');
-                lastTime = performance.now();
-                update();
+                lastTime = performance.now(); update();
             }
         }
 
@@ -554,58 +517,63 @@
             document.getElementById('overlay-gameover').classList.remove('hidden');
         }
 
-        // --- SKOR KAYIT (LocalStorage) ---
         function saveHighScore(score) {
             let scores = JSON.parse(localStorage.getItem('tetris_mobile_scores')) || [];
             scores.push(score);
             scores.sort((a, b) => b - a);
-            scores = scores.slice(0, 5); // İlk 5'i tut
+            scores = scores.slice(0, 5);
             localStorage.setItem('tetris_mobile_scores', JSON.stringify(scores));
         }
 
         function updateHighScoreList() {
             let scores = JSON.parse(localStorage.getItem('tetris_mobile_scores')) || [];
             const listEl = document.getElementById('hs-list-display');
-            if (scores.length === 0) {
-                listEl.innerHTML = "<li>Henüz skor yok</li>";
-            } else {
-                listEl.innerHTML = scores.map((s, i) => `<li>${i+1}. ${s}</li>`).join('');
-            }
+            listEl.innerHTML = scores.length ? scores.map((s, i) => `<li>${i+1}. ${s}</li>`).join('') : "<li>Henüz skor yok</li>";
         }
 
-        // --- KONTROLLER ---
+        // --- KONTROLLER & OLAYLAR ---
         
-        // Dokunmatik Buton Bağlantıları
-        function bindTouch(id, action) {
+        // Header Pause Butonu
+        document.getElementById('btn-header-pause').addEventListener('click', (e) => {
+            e.preventDefault();
+            togglePause();
+        });
+
+        function bindTouch(id, actionStart, actionEnd) {
             const btn = document.getElementById(id);
-            const handler = (e) => {
-                e.preventDefault(); // Zoom vs engelle
-                if (isRunning && !isPaused) action();
-            };
-            btn.addEventListener('touchstart', handler, {passive: false});
-            btn.addEventListener('mousedown', handler);
+            const startHandler = (e) => { e.preventDefault(); if (isRunning && !isPaused) actionStart(); };
+            const endHandler = (e) => { e.preventDefault(); if (actionEnd) actionEnd(); };
+
+            btn.addEventListener('touchstart', startHandler, {passive: false});
+            btn.addEventListener('touchend', endHandler);
+            btn.addEventListener('mousedown', startHandler);
+            btn.addEventListener('mouseup', endHandler);
+            btn.addEventListener('mouseleave', endHandler);
         }
 
         bindTouch('btn-left', () => playerMove(-1));
         bindTouch('btn-right', () => playerMove(1));
-        bindTouch('btn-down', () => playerDrop());
         bindTouch('btn-rotate', () => playerRotate(1));
 
-        // Klavye Desteği (PC Test için)
-        document.addEventListener('keydown', event => {
-            // Sadece oyun ekranındaysa çalışsın
-            if(document.getElementById('game-container').classList.contains('hidden')) return;
+        let downIntervalId = null;
+        bindTouch('btn-down', 
+            () => { 
+                playerDrop();
+                if (!downIntervalId) downIntervalId = setInterval(() => playerDrop(), 50);
+            },
+            () => { if (downIntervalId) { clearInterval(downIntervalId); downIntervalId = null; } }
+        );
 
+        document.addEventListener('keydown', event => {
+            if(document.getElementById('game-container').classList.contains('hidden')) return;
             if (event.keyCode === 27) togglePause();
             if (!isRunning || isPaused) return;
-
             if (event.keyCode === 37) playerMove(-1);
             else if (event.keyCode === 39) playerMove(1);
             else if (event.keyCode === 40) playerDrop();
             else if (event.keyCode === 38 || event.keyCode === 81) playerRotate(1);
         });
 
-        // Başlangıçta Menüyü Göster
         showMainMenu();
 
     </script>
