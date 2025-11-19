@@ -4,14 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>CRAZY TETRIS MOBILE PRO</title>
+    <title>CRAZY TETRIS PRO MAX</title>
     <style>
         :root {
             --bg-color: #202028;
             --ui-bg: rgba(0, 0, 0, 0.95);
             --accent: #3877FF;
             --border-color: #fff;
-            --container-width: 320px;
+            /* MATEMATİKSEL DÜZELTME: 
+               12 Sütun x 25px = 300px Genişlik
+               20 Satır x 25px = 500px Yükseklik 
+               Bu oran bozulursa bloklar kaybolur. */
+            --game-width: 300px; 
+            --game-height: 500px;
         }
 
         body {
@@ -36,17 +41,18 @@
             align-items: center;
         }
 
-        /* --- ÜST BİLGİ ÇUBUĞU --- */
+        /* --- ÜST BİLGİ ÇUBUĞU (Genişletildi) --- */
         #top-bar {
-            display: none;
-            width: var(--container-width);
-            height: 70px;
+            display: none; /* Başlangıçta gizli */
+            width: var(--game-width);
+            height: 90px; /* Yükseklik artırıldı */
             background: #333;
+            /* Çerçeve uyumu için box-sizing ve border ayarları */
+            box-sizing: border-box; 
             border: 2px solid var(--border-color);
-            border-bottom: none;
+            border-bottom: none; /* Oyun alanıyla bütünleşsin */
             border-radius: 12px 12px 0 0;
-            padding: 0 10px;
-            box-sizing: border-box;
+            padding: 0 15px;
             flex-direction: row;
             justify-content: space-between;
             align-items: center;
@@ -54,29 +60,29 @@
 
         .stats-group {
             text-align: left;
-            font-size: 12px;
+            font-size: 13px;
             color: #aaa;
             display: flex;
-            gap: 10px;
+            flex-direction: column;
+            justify-content: center;
+            gap: 5px;
         }
-        .stat-item div { margin-bottom: 2px; }
         .stats-val {
             color: #fff;
-            font-size: 18px;
+            font-size: 22px;
             font-weight: bold;
-            display: block;
+            margin-left: 5px;
         }
 
-        /* YENİ: Header Pause Butonu */
+        /* Header Pause Butonu */
         .header-pause-btn {
-            width: 40px;
-            height: 40px;
-            background: #FF0D72; /* Kırmızı Durdurma Rengi */
+            width: 45px;
+            height: 45px;
+            background: #FF0D72;
             border: 2px solid #fff;
             border-radius: 50%;
             color: white;
             font-weight: bold;
-            font-family: monospace;
             font-size: 18px;
             display: flex;
             align-items: center;
@@ -91,31 +97,35 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            width: 70px; /* Sabit genişlik */
         }
         .next-label {
-            font-size: 10px;
+            font-size: 11px;
             color: #0DFF72;
-            margin-bottom: 2px;
+            margin-bottom: 4px;
             font-weight: bold;
             letter-spacing: 1px;
+            white-space: nowrap; /* Yazı taşmasın */
         }
         #next-canvas {
             background: #000;
-            border: 1px solid #555;
+            border: 1px solid #999;
             display: block;
             border-radius: 4px;
         }
 
-        /* --- OYUN ALANI --- */
+        /* --- OYUN ALANI (Boyutlar Sabitlendi) --- */
         #game-area-container {
             position: relative;
-            width: var(--container-width);
-            height: 480px;
+            width: var(--game-width);
+            height: var(--game-height);
+            box-sizing: border-box; /* Border dahil hesaplama */
             border: 2px solid var(--border-color);
-            border-top: 1px solid #555;
+            border-top: 1px solid #555; /* Üst bar ile ayrım çizgisi */
             border-radius: 0 0 12px 12px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            background: #000;
         }
 
         canvas {
@@ -138,7 +148,6 @@
         }
         
         .menu-screen { position: fixed; z-index: 200; background: var(--bg-color); }
-
         .hidden { display: none !important; }
 
         h1.game-title {
@@ -171,15 +180,14 @@
             background: #333; width: 80%; border-radius: 10px; padding: 15px; text-align: center;
         }
         .high-score-list li { font-size: 22px; margin: 10px 0; border-bottom: 1px solid #555; color: #fff; }
-        .high-score-list li:nth-child(1) { color: #FFE138; font-weight: bold; }
 
         /* --- MOBİL KONTROLLER --- */
         #mobile-controls {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            width: var(--container-width);
-            margin-top: 20px;
+            gap: 12px;
+            width: var(--game-width);
+            margin-top: 15px;
             justify-items: center;
         }
 
@@ -196,6 +204,7 @@
             color: white;
             user-select: none;
             transition: background 0.1s;
+            /* Hepsi aynı görsel stilde */
         }
 
         .control-btn:active {
@@ -204,6 +213,7 @@
             transform: scale(0.95);
         }
 
+        /* İkon Renkleri */
         .btn-rotate { color: #0DFF72; border-color: rgba(13, 255, 114, 0.5); }
         .btn-down { color: #0DC2FF; border-color: rgba(13, 194, 255, 0.5); }
 
@@ -227,8 +237,8 @@
         
         <div id="top-bar">
             <div class="stats-group">
-                <div class="stat-item">PUAN<span class="stats-val" id="score-val">0</span></div>
-                <div class="stat-item">SEVİYE<span class="stats-val" id="level-val">1</span></div>
+                <div>P: <span class="stats-val" id="score-val">0</span></div>
+                <div>L: <span class="stats-val" id="level-val">1</span></div>
             </div>
             
             <div id="btn-header-pause" class="header-pause-btn">||</div>
@@ -240,7 +250,7 @@
         </div>
 
         <div id="game-area-container">
-            <canvas id="tetris" width="320" height="480"></canvas>
+            <canvas id="tetris" width="300" height="500"></canvas>
 
             <div id="overlay-countdown" class="overlay hidden">
                 <div style="font-size:100px; font-weight:bold; color:#0DFF72;" id="count-num">3</div>
@@ -267,14 +277,17 @@
     </div>
 
     <script>
-        // --- AYARLAR ---
+        // --- AYARLAR & MATEMATİK ---
         const canvas = document.getElementById('tetris');
         const context = canvas.getContext('2d');
         const nextCanvas = document.getElementById('next-canvas');
         const nextContext = nextCanvas.getContext('2d');
         
-        const scaleFactor = 320 / 12; 
-        context.scale(scaleFactor, scaleFactor);
+        // ÇÖZÜM BURADA:
+        // Genişlik: 300px / 12 Sütun = 25px (Tam sayı)
+        // Yükseklik: 500px / 20 Satır = 25px (Tam sayı)
+        // Artık aspect ratio bozulmayacak, alttan satır kaybolmayacak.
+        context.scale(25, 25);
         nextContext.scale(15, 15);
 
         const arena = createMatrix(12, 20);
@@ -287,7 +300,7 @@
         let isPaused = false;
         let animationId = null;
 
-        // --- TEMEL FONKSİYONLAR ---
+        // --- FONKSİYONLAR ---
         function createMatrix(w, h) {
             const matrix = [];
             while (h--) matrix.push(new Array(w).fill(0));
@@ -309,7 +322,8 @@
 
         function draw() {
             context.fillStyle = '#000';
-            context.fillRect(0, 0, canvas.width / scaleFactor, canvas.height / scaleFactor);
+            // Canvas'ı temizle (300/25 = 12, 500/25 = 20)
+            context.fillRect(0, 0, 12, 20);
             drawMatrix(arena, {x: 0, y: 0}, context);
             drawMatrix(player.matrix, player.pos, context);
         }
@@ -438,7 +452,7 @@
             dropInterval = Math.max(100, 1000 - (level - 1) * 100);
         }
 
-        // --- YÖNETİM ---
+        // --- OYUN YÖNETİMİ ---
         function showMainMenu() {
             isRunning = false;
             document.getElementById('menu-main').classList.remove('hidden');
@@ -531,12 +545,9 @@
             listEl.innerHTML = scores.length ? scores.map((s, i) => `<li>${i+1}. ${s}</li>`).join('') : "<li>Henüz skor yok</li>";
         }
 
-        // --- KONTROLLER & OLAYLAR ---
-        
-        // Header Pause Butonu
+        // --- KONTROLLER ---
         document.getElementById('btn-header-pause').addEventListener('click', (e) => {
-            e.preventDefault();
-            togglePause();
+            e.preventDefault(); togglePause();
         });
 
         function bindTouch(id, actionStart, actionEnd) {
@@ -558,12 +569,14 @@
         let downIntervalId = null;
         bindTouch('btn-down', 
             () => { 
-                playerDrop();
+                playerDrop(); // İlk dokunuşta hemen indir
+                // Basılı tutunca seri indir
                 if (!downIntervalId) downIntervalId = setInterval(() => playerDrop(), 50);
             },
             () => { if (downIntervalId) { clearInterval(downIntervalId); downIntervalId = null; } }
         );
 
+        // Klavye
         document.addEventListener('keydown', event => {
             if(document.getElementById('game-container').classList.contains('hidden')) return;
             if (event.keyCode === 27) togglePause();
